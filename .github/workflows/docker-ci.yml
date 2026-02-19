@@ -1,28 +1,34 @@
-name: First GitHub Actions Workflow
+name: Python Docker CI - Build & Push
 
-on: 
+on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
 jobs:
-  CI-Part:
+  docker:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Check if docker is pressent
-        run: | 
-          echo "Checking Docker version..."
-          docker --version
 
-          echo "Checking Docker info..."
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # Stage 1 — Docker info
+      # -------------------------
+      - name: Stage 1 - Docker info
+        run: |
+          echo "Docker version:"
+          docker --version
+          echo "Docker info:"
           docker info
 
-          echo "Listing current directory..."
-          ls -la
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-          echo "Checking OS details..."
-          uname -a
+      # -------------------------
+      # Stage 2 — Docker build
+      # -------------------------
+      - name: Stage 2 - Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/python-gha-lab:latest .
+          docker images
